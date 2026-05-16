@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReleaseNotes.ai
+
+Turn raw Git commits, Jira tickets, and sprint bullets into polished, user-facing release notes with AI.
+
+## Tech Stack
+
+- **Framework:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS
+- **Auth:** NextAuth.js (magic-link email via Postmark)
+- **Database:** Supabase (PostgreSQL) + Prisma
+- **AI:** OpenRouter (Gemini Flash — free tier)
+- **Billing:** Stripe subscriptions
+- **Rate Limiting:** Upstash Redis
+- **Cron:** Vercel Cron Jobs
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm
+- Supabase project (for database)
+- OpenRouter account (free API key)
+- Postmark account (for transactional email)
+- Stripe account (for billing)
+- Upstash account (for rate limiting)
+
+### Installation
+
+```bash
+git clone https://github.com/sifarellc/Changelog-to-Release-Notes-Writer.git
+cd Changelog-to-Release-Notes-Writer
+npm install
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Supabase PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Random string (`openssl rand -base64 32`) |
+| `NEXTAUTH_URL` | App URL (http://localhost:3000 for dev) |
+| `EMAIL_SERVER_USER` | Postmark Server API token |
+| `EMAIL_SERVER_PASSWORD` | Postmark Server API token (same) |
+| `EMAIL_FROM` | Sender email address |
+| `OPENROUTER_API_KEY` | OpenRouter API key |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_PRICE_ID` | Stripe price ID for the $19/mo plan |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
+| `CRON_SECRET` | Random string (`openssl rand -hex 32`) |
+
+### Database Setup
+
+```bash
+npx prisma db push
+```
+
+### Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Vercel (recommended)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push to GitHub
+2. Import repo in Vercel
+3. Add all environment variables
+4. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Stripe Webhook Setup
 
-## Deploy on Vercel
+After deploying, create a webhook in Stripe Dashboard:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- URL: `https://your-domain.vercel.app/api/webhooks/stripe`
+- Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── auth/[...nextauth]/route.ts  # NextAuth magic-link auth
+│   │   ├── checkout/route.ts            # Stripe checkout session
+│   │   ├── cron/reset-usage/route.ts    # Monthly free usage reset
+│   │   ├── rewrite/route.ts             # AI rewrite endpoint
+│   │   └── webhooks/stripe/route.ts     # Stripe webhook handler
+│   ├── pricing/page.tsx                 # Pricing page
+│   ├── layout.tsx                       # Root layout
+│   └── page.tsx                         # Home page
+├── components/
+│   ├── Header.tsx                       # App header
+│   ├── OutputPanel.tsx                  # Release notes output
+│   └── ReleaseNotesForm.tsx             # Input form + tone selector
+└── lib/
+    ├── auth.ts                          # NextAuth config
+    ├── db.ts                            # Prisma client singleton
+    ├── llm.ts                           # OpenRouter AI helper
+    ├── rate-limit.ts                    # Upstash rate limiter
+    └── redis.ts                         # Upstash Redis client
+prisma/
+└── schema.prisma                        # Database schema
+```
+
+## License
+
+MIT
