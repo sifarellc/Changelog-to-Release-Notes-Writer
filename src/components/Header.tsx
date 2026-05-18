@@ -3,7 +3,19 @@ import { signIn, signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 
 export function Header() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+
+  if (status === 'loading') {
+    return (
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+          <Link href="/" className="text-xl font-bold text-gray-900">
+            ReleaseNotes<span className="text-indigo-600">.ai</span>
+          </Link>
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -23,12 +35,12 @@ export function Header() {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => signIn('email')}
+            <Link
+              href="/signin"
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
             >
               Sign in
-            </button>
+            </Link>
           )}
         </div>
       </div>

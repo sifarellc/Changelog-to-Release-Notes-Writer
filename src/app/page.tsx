@@ -1,7 +1,7 @@
 'use client'
-import { signIn, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Header } from '../components/Header'
 import { ReleaseNotesForm } from '../components/ReleaseNotesForm'
 import { OutputPanel } from '../components/OutputPanel'
@@ -15,12 +15,8 @@ export default function Home() {
   const [error, setError] = useState('')
 
   const handleSubmit = async (rawNotes: string, tone: string) => {
-    if (status === 'unauthenticated') {
-      signIn('email')
-      return
-    }
-
-    if (!session) {
+    if (status === 'unauthenticated' || !session) {
+      setError('Please sign in first to generate release notes.')
       return
     }
 
