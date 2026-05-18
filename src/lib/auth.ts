@@ -23,4 +23,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verifyRequest: '/',
   },
   session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET,
 })

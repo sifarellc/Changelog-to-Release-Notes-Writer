@@ -1,5 +1,5 @@
 'use client'
-import { useSession } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Header } from '../components/Header'
@@ -15,10 +15,12 @@ export default function Home() {
   const [error, setError] = useState('')
 
   const handleSubmit = async (rawNotes: string, tone: string) => {
+    if (status === 'unauthenticated') {
+      signIn('email')
+      return
+    }
+
     if (!session) {
-      sessionStorage.setItem('pendingNotes', rawNotes)
-      sessionStorage.setItem('pendingTone', tone)
-      router.push('/api/auth/signin')
       return
     }
 
