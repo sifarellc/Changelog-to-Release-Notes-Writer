@@ -8,7 +8,7 @@ const TONES = [
 ]
 
 interface Props {
-  onSubmit: (rawNotes: string, tone: string) => void
+  onSubmit: (rawNotes: string, tone: string, email?: string) => void
   loading: boolean
 }
 
@@ -25,7 +25,7 @@ export function ReleaseNotesForm({ onSubmit, loading }: Props) {
         <textarea
           value={rawNotes}
           onChange={(e) => setRawNotes(e.target.value)}
-          placeholder={`Example:\n- Fixed login timeout bug (PROJ-123)\n- Added dark mode toggle\n- Upgraded database to Postgres 16\n- Refactored auth middleware`}
+          placeholder={`Example:\\n- Fixed login timeout bug (PROJ-123)\\n- Added dark mode toggle\\n- Upgraded database to Postgres 16\\n- Refactored auth middleware`}
           className="h-48 w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </div>
@@ -57,6 +57,10 @@ export function ReleaseNotesForm({ onSubmit, loading }: Props) {
       >
         {loading ? '✨ Writing…' : '✨ Generate Release Notes'}
       </button>
+
+      <p className="text-center text-xs text-gray-400">
+        No sign-up required to preview. Create a free account to save, copy & export.
+      </p>
     </div>
   )
 }

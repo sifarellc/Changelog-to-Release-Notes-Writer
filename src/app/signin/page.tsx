@@ -1,14 +1,22 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function SignIn() {
+function SignInContent() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const callbackUrl = searchParams.get('callbackUrl')
+    if (callbackUrl) {
+      router.push(callbackUrl)
+    }
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,17 +26,25 @@ export default function SignIn() {
     setError('')
     setMessage('')
 
+    const pendingSessionId = typeof window !== 'undefined'
+      ? sessionStorage.getItem('pendingSessionId')
+      : null
+
+    const callbackUrl = pendingSessionId
+      ? `/?unlock=${pendingSessionId}`
+      : '/'
+
     const result = await signIn('email', {
       email,
       redirect: false,
-      callbackUrl: '/',
+      callbackUrl,
     })
 
     if (result?.error) {
       setError('Failed to send sign-in link. Please try again.')
       setLoading(false)
     } else {
-      setMessage('Check your email for a sign-in link!')
+      setMessage('Check your email for a magic link!')
       setLoading(false)
     }
   }
@@ -79,5 +95,20 @@ export default function SignIn() {
         </button>
       </div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900">Sign in</h1>
+          <p className="mb-6 text-sm text-gray-600">Loading…</p>
+        </div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 }
