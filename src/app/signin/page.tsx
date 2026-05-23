@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -34,17 +35,30 @@ function SignInContent() {
       ? `/?unlock=${pendingSessionId}`
       : '/'
 
-    const result = await signIn('email', {
-      email,
-      redirect: false,
-      callbackUrl,
-    })
+    try {
+      const result = await signIn('email', {
+        email,
+        redirect: false,
+        callbackUrl,
+      })
 
-    if (result?.error) {
-      setError('Failed to send sign-in link. Please try again.')
-      setLoading(false)
-    } else {
-      setMessage('Check your email for a magic link!')
+      console.log('[SignIn] signIn result:', result)
+
+      if (result?.error) {
+        setError(`Failed to send sign-in link: ${result.error}. Please try again.`)
+      } else if (result?.ok) {
+        setMessage('Check your email for a magic link!')
+      } else {
+        // If no error but also not ok, show the URL for debugging
+        setMessage('Check your email for a magic link!')
+        if (result?.url) {
+          console.log('[SignIn] Redirect URL:', result.url)
+        }
+      }
+    } catch (err: any) {
+      console.error('[SignIn] Error:', err)
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
