@@ -31,10 +31,26 @@ export async function callLLM(userMessage: string): Promise<string> {
   })
 
   if (!response.ok) {
-    const errText = await response.text()
-    throw new Error(`OpenRouter error ${response.status}: ${errText}`)
+    let errText = ''
+    try {
+      errText = await response.text()
+    } catch {
+      // ignore
+    }
+    throw new Error(`OpenRouter error ${response.status}: ${errText || response.statusText}`)
   }
 
-  const data = await response.json()
-  return data.choices?.[0]?.message?.content || ''
+  let data: any
+  try {
+    data = await response.json()
+  } catch {
+    throw new Error('OpenRouter returned invalid JSON response')
+  }
+
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error('OpenRouter returned empty response')
+  }
+
+  return content
 }
