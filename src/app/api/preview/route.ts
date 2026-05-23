@@ -1,10 +1,10 @@
-import { auth } from '@/lib/auth'
+import { getAuth } from '@/lib/auth'
 import { redis } from '@/lib/redis'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
   try {
-    const session = await auth()
+    const session = await getAuth()
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

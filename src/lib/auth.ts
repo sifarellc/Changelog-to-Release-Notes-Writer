@@ -1,9 +1,11 @@
-import NextAuth from 'next-auth'
+import { getServerSession } from 'next-auth'
+import type { AuthOptions } from 'next-auth'
 import EmailProvider from 'next-auth/providers/email'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from './db'
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+// Reuse the same auth options as the route handler
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma as any),
   providers: [
     EmailProvider({
@@ -24,4 +26,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: { strategy: 'jwt' },
   secret: process.env.NEXTAUTH_SECRET,
-})
+}
+
+/**
+ * Get the current session in API routes and server components.
+ * Usage: const session = await getAuth()
+ */
+export async function getAuth() {
+  return getServerSession(authOptions)
+}

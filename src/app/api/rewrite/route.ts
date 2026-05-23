@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth'
+import { getAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { callLLM } from '@/lib/llm'
 import { ratelimit } from '@/lib/rate-limit'
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     // Try to get session — if auth fails (e.g. DB unavailable), treat as anonymous
     let session = null
     try {
-      session = await auth()
+      session = await getAuth()
     } catch {
       // auth() may throw if Prisma/DB is unreachable; fall through to anonymous flow
     }
